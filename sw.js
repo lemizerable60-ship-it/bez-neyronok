@@ -1,27 +1,22 @@
-const CACHE_NAME = 'psychosuite-v21';
+const CACHE_NAME = 'psychosuite-v22';
 const URLS_TO_CACHE = [
-  '/bez-neyronok/',
-  '/bez-neyronok/index.html',
-  '/bez-neyronok/index.js',
-  '/bez-neyronok/sw-register.js',
-  '/bez-neyronok/manifest.json',
+  './',
+  './index.html',
+  './index.js',
+  './sw-register.js',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
   'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js'
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Принудительная активация новой версии SW
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
-        // Делаем кэширование необязательных ресурсов более отказоустойчивым
-        const cachePromises = URLS_TO_CACHE.map(urlToCache => {
-            return cache.add(urlToCache).catch(err => {
-                console.warn(`Failed to cache ${urlToCache}:`, err);
-            });
-        });
-        return Promise.all(cachePromises);
+        console.log('Opened cache and caching URLs');
+        return cache.addAll(URLS_TO_CACHE);
       })
   );
 });
@@ -33,42 +28,37 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Захватываем контроль над открытыми страницами
   );
 });
 
 self.addEventListener('fetch', event => {
+  // Используем стратегию "сначала сеть, потом кэш" для HTML, чтобы всегда получать обновления
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Для остальных запросов используем "сначала кэш, потом сеть"
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        if (response) {
-          return response;
-        }
-        // Если ресурса нет в кэше, пробуем загрузить его из сети
-        return fetch(event.request).then(
-          networkResponse => {
-            // Не кэшируем запросы к AI
-            if (event.request.url.includes('generativelanguage.googleapis.com')) {
-                return networkResponse;
+        return response || fetch(event.request).then(fetchResponse => {
+          return caches.open(CACHE_NAME).then(cache => {
+            // Кэшируем только успешные GET-запросы
+            if (fetchResponse.status === 200 && event.request.method === 'GET') {
+               cache.put(event.request.url, fetchResponse.clone());
             }
-            // Кэшируем успешные GET-запросы
-            if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
-            }
-            return networkResponse;
-          }
-        ).catch(() => {
-            // Обработка ошибок сети. Можно вернуть страницу-заглушку для офлайн-режима, если нужно.
+            return fetchResponse;
+          });
         });
-      }
-    )
+      })
   );
 });
