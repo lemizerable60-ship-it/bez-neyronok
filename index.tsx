@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
 // Fix: Import ReactDOM to resolve 'Cannot find name 'ReactDOM'' error.
 import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';
-import { GoogleGenAI } from 'https://cdn.jsdelivr.net/npm/@google/genai/dist/index.esm.js';
-
-// --- GLOBAL TYPES ---
-declare global {
-    interface Window {
-        GEMINI_API_KEY?: string;
-    }
-}
 
 // --- DATA TYPES ---
 type Client = {
@@ -25,7 +17,6 @@ type TestResult = {
   answers: number[];
   scores: Record<string, number>;
   interpretation: Record<string, string>;
-  aiInterpretation?: string;
 };
 
 type Report = {
@@ -86,101 +77,6 @@ function useStickyState<T>(defaultValue: T, key: string): [T, React.Dispatch<Rea
 
   return [value, setValue];
 }
-
-// --- API SERVICE ---
-class GeminiAIService {
-    private ai: GoogleGenAI | null = null;
-
-    constructor() {
-        // Prioritize environment variable, then fallback to config file.
-        const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) 
-            || (window.GEMINI_API_KEY && window.GEMINI_API_KEY !== "ВАШ_КЛЮЧ_API_СЮДА" ? window.GEMINI_API_KEY : null);
-
-        if (apiKey) {
-            try {
-                this.ai = new GoogleGenAI({ apiKey });
-            } catch (error) {
-                console.error("Error initializing Gemini AI Service:", error);
-                this.ai = null;
-            }
-        } else {
-            console.warn("Gemini API Key is not configured. AI features will be unavailable.");
-            this.ai = null;
-        }
-    }
-
-    isAvailable(): boolean {
-        return this.ai !== null;
-    }
-
-    async getTestInterpretation(testName: string, scores: Record<string, number>, standardInterpretation: string): Promise<string> {
-        if (!this.ai) {
-            throw new Error("AI Service is not available.");
-        }
-        const prompt = `
-            Ты — профессиональный клинический психолог.
-            Проанализируй следующие результаты психологического теста.
-            Предоставь подробную, структурированную и эмпатичную интерпретацию на основе баллов.
-            Не повторяй стандартную интерпретацию дословно; расширь и дополни её.
-            Объясни, что эти баллы могут означать с точки зрения эмоционального состояния, когнитивных функций и потенциальных проблемных областей.
-            Предложи возможные следующие шаги или темы для обсуждения с терапевтом.
-            Твой ответ должен быть на русском языке.
-
-            Название теста: ${testName}
-            Баллы: ${JSON.stringify(scores)}
-            Стандартная интерпретация: ${standardInterpretation}
-
-            Начинай свою подробную интерпретацию.
-        `;
-        const response = await this.ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
-        return response.text;
-    }
-    
-    async getConsolidatedInterpretation(client: Client, testResults: TestResult[]): Promise<string> {
-        if (!this.ai) {
-            throw new Error("AI Service is not available.");
-        }
-        const resultsSummary = testResults.map(tr => {
-            const test = TESTS[tr.testKey as keyof typeof TESTS];
-            return `
-                Тест: ${test.name} (проведен ${formatDate(tr.date)})
-                Баллы: ${JSON.stringify(tr.scores)}
-                Стандартная интерпретация: ${Object.values(tr.interpretation).join(' ')}
-            `;
-        }).join('\n---\n');
-
-        const prompt = `
-            Ты — эксперт в области клинической психологии, анализирующий несколько результатов тестов одного клиента.
-            Имя клиента: ${client.name}
-            Дата рождения клиента: ${formatDate(client.birthDate)}
-
-            Вот результаты нескольких диагностических тестов:
-            ${resultsSummary}
-
-            Основываясь на этих сводных данных, предоставь целостный анализ. Твой анализ должен:
-            1. Определить совпадения и расхождения в результатах разных тестов.
-            2. Сформулировать всеобъемлющий психологический профиль клиента.
-            3. Выделить потенциальные первичные и вторичные проблемы.
-            4. Предложить предварительную диагностическую гипотезу, если это применимо.
-            5. Дать рекомендации по терапевтическому вмешательству, включая возможные подходы (например, КПТ, психодинамический) и области для фокусировки.
-            6. Сохранять профессиональный, эмпатичный и клинический тон.
-            Твой ответ должен быть полностью на русском языке.
-
-            Начинай свой сводный анализ.
-        `;
-
-        const response = await this.ai.models.generateContent({
-            model: 'gemini-2.5-pro', // Using a more powerful model for complex analysis
-            contents: prompt,
-        });
-        return response.text;
-    }
-}
-
-const aiService = new GeminiAIService();
 
 // --- TEST CONFIG ---
 const TESTS = {
@@ -283,7 +179,7 @@ const TESTS = {
             else if (depression >= 8 && depression <= 10) depressionResult = "Субклинически выраженная депрессия.";
             else if (depression >= 11) depressionResult = "Клинически выраженная депрессия.";
 
-            return { anxiety: `Anxiety: ${anxietyResult}`, depression: `Depression: ${depressionResult}` };
+            return { anxiety: `Тревога: ${anxietyResult}`, depression: `Депрессия: ${depressionResult}` };
         },
     },
     zung: {
@@ -573,7 +469,6 @@ const TestResultScreen: React.FC<{
     setTestResults: (results: TestResult[]) => void;
 }> = ({ setScreen, resultId, clients, testResults, setTestResults }) => {
     const result = testResults.find(tr => tr.id === resultId);
-    const [isLoading, setIsLoading] = useState(false);
 
     if (!result) {
         return React.createElement('div', null, 'Результат теста не найден.');
@@ -582,27 +477,6 @@ const TestResultScreen: React.FC<{
     const client = clients.find(c => c.id === result.clientId);
     const test = TESTS[result.testKey as keyof typeof TESTS];
 
-    const getAIInterpretation = async () => {
-        if (!aiService.isAvailable()) {
-            alert("Сервис AI недоступен. Проверьте ключ API в файле config.js.");
-            return;
-        }
-        setIsLoading(true);
-        try {
-            const standardInterpretationText = Object.entries(result.interpretation)
-                .map(([key, value]) => `${key}: ${value}`)
-                .join('\n');
-            const interpretation = await aiService.getTestInterpretation(test.name, result.scores, standardInterpretationText);
-            const updatedResults = testResults.map(tr => tr.id === resultId ? { ...tr, aiInterpretation: interpretation } : tr);
-            setTestResults(updatedResults);
-        } catch (error) {
-            console.error(error);
-            alert("Произошла ошибка при получении интерпретации от AI.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
     const generateTxtReport = () => {
         let reportText = `ПРОТОКОЛ ОБСЛЕДОВАНИЯ\n=========================\n\n`;
         reportText += `Клиент: ${client?.name || 'N/A'}\n`;
@@ -623,10 +497,6 @@ const TestResultScreen: React.FC<{
         Object.values(result.interpretation).forEach(value => {
             reportText += `- ${value}\n`;
         });
-        if (result.aiInterpretation) {
-            reportText += `\nAI ИНТЕРПРЕТАЦИЯ\n-------------------------\n`;
-            reportText += result.aiInterpretation;
-        }
         
         downloadAsTxt(`Протокол_${client?.name}_${test.name}_${formatDate(result.date)}.txt`, reportText);
     };
@@ -662,16 +532,6 @@ const TestResultScreen: React.FC<{
                         )
                     )
                 )
-            ),
-            React.createElement(Card, null,
-                React.createElement('h3', { className: "text-md font-bold mb-2" }, "AI Интерпретация"),
-                result.aiInterpretation ? React.createElement('div', { className: "whitespace-pre-wrap p-2 bg-gray-50 dark:bg-gray-700 rounded" }, result.aiInterpretation)
-                    : (
-                        React.createElement('div', null,
-                            !aiService.isAvailable() && React.createElement('p', { className: "text-yellow-600 dark:text-yellow-400" }, "Сервис AI недоступен. Проверьте ключ API в файле config.js."),
-                            aiService.isAvailable() && React.createElement(Button, { onClick: getAIInterpretation, disabled: isLoading }, isLoading ? "Генерация..." : "Получить расширенную интерпретацию")
-                        )
-                    )
             )
         )
     );
@@ -691,8 +551,6 @@ const ReportScreen: React.FC<{
     const existingReport = reportId ? reports.find(r => r.id === reportId) : null;
 
     const [selectedTestIds, setSelectedTestIds] = useState<Set<string>>(new Set(existingReport?.testResultIds || []));
-    const [consolidatedReport, setConsolidatedReport] = useState<string | null>(existingReport?.summary || null);
-    const [isLoading, setIsLoading] = useState(false);
     const [localReports, setLocalReports] = useState(reports.filter(r => r.clientId === clientId));
 
 
@@ -706,36 +564,20 @@ const ReportScreen: React.FC<{
         setSelectedTestIds(newSelection);
     };
     
-    const generateConsolidatedReport = async () => {
-        if (!aiService.isAvailable() || selectedTestIds.size === 0) return;
+    const saveReport = () => {
+        const newReport: Report = {
+            id: existingReport?.id || Date.now().toString(),
+            clientId,
+            date: new Date().toISOString(),
+            testResultIds: Array.from(selectedTestIds),
+            summary: "", // AI Summary is disabled
+        };
         
-        setIsLoading(true);
-        try {
-            if (!client) throw new Error("Client not found for report generation");
-            const resultsToAnalyze = clientTestResults.filter(tr => selectedTestIds.has(tr.id));
-            const analysis = await aiService.getConsolidatedInterpretation(client, resultsToAnalyze);
-            setConsolidatedReport(analysis);
-
-            const newReport: Report = {
-                id: existingReport?.id || Date.now().toString(),
-                clientId,
-                date: new Date().toISOString(),
-                testResultIds: Array.from(selectedTestIds),
-                summary: analysis,
-            };
-            
-            const otherReports = reports.filter(r => r.id !== newReport.id);
-            const updatedReports = [...otherReports, newReport];
-            setReports(updatedReports);
-            setLocalReports(updatedReports.filter(r => r.clientId === clientId));
-
-
-        } catch (error) {
-            console.error(error);
-            alert("Ошибка при генерации сводного отчета.");
-        } finally {
-            setIsLoading(false);
-        }
+        const otherReports = reports.filter(r => r.id !== newReport.id);
+        const updatedReports = [...otherReports, newReport];
+        setReports(updatedReports);
+        setLocalReports(updatedReports.filter(r => r.clientId === clientId));
+        alert("Отчет сохранен!");
     };
     
     const generateTxtReport = () => {
@@ -752,18 +594,12 @@ const ReportScreen: React.FC<{
             reportText += `  Баллы: ${JSON.stringify(tr.scores)}\n`;
             reportText += `  Интерпретация: ${Object.values(tr.interpretation).join(' ')}\n`;
         });
-        
-        if(consolidatedReport) {
-            reportText += `\n\nСВОДНЫЙ АНАЛИЗ (AI)\n=========================\n`;
-            reportText += consolidatedReport;
-        }
 
         downloadAsTxt(`Сводный_отчет_${client?.name}_${formatDate(new Date().toISOString())}.txt`, reportText);
     };
     
      const loadReport = (report: Report) => {
         setSelectedTestIds(new Set(report.testResultIds));
-        setConsolidatedReport(report.summary);
     };
 
     if (!client) return React.createElement('div', null, 'Клиент не найден.');
@@ -790,9 +626,8 @@ const ReportScreen: React.FC<{
                    )
                 ),
                  React.createElement(Card, null,
-                   React.createElement('h3', { className: "font-bold mb-2" }, "2. Сгенерируйте анализ (AI)"),
-                    React.createElement(Button, { onClick: generateConsolidatedReport, disabled: isLoading || selectedTestIds.size === 0 || !aiService.isAvailable() }, isLoading ? "Генерация..." : "Создать/обновить сводный анализ"),
-                     !aiService.isAvailable() && React.createElement('p', { className: "text-xs text-yellow-600 mt-2" }, "Сервис AI недоступен. Проверьте ключ API в файле config.js.")
+                   React.createElement('h3', { className: "font-bold mb-2" }, "2. Сохраните отчет"),
+                    React.createElement(Button, { onClick: saveReport, disabled: selectedTestIds.size === 0 }, "Сохранить выбранные тесты в отчет")
                 ),
                 React.createElement(Card, null,
                    React.createElement('h3', { className: "font-bold mb-2" }, "Сохраненные сводные отчеты"),
@@ -825,10 +660,6 @@ const ReportScreen: React.FC<{
                            )
                        )
                    ) : React.createElement('p', null, "Выберите тесты для отображения сводки.")
-                ),
-                 React.createElement(Card, null,
-                   React.createElement('h3', { className: "font-bold mb-2" }, "Сводный анализ (AI)"),
-                    consolidatedReport ? React.createElement('div', { className: "whitespace-pre-wrap p-2 bg-gray-50 dark:bg-gray-700 rounded" }, consolidatedReport) : React.createElement('p', null, "Сгенерируйте анализ для просмотра.")
                 )
              )
         )
@@ -882,10 +713,57 @@ const SettingsScreen: React.FC<{
     };
     
     const importRef = useRef<HTMLInputElement>(null);
+    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'light');
+    const [currentColor, setCurrentColor] = useState(localStorage.getItem('themeColor') || '#3b82f6');
+    
+    const applyTheme = (theme: 'light' | 'dark') => {
+        localStorage.setItem('theme', theme);
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        setCurrentTheme(theme);
+    };
+
+    const applyThemeColor = (color: string) => {
+        localStorage.setItem('themeColor', color);
+        document.documentElement.style.setProperty('--primary-color', color);
+        setCurrentColor(color);
+    };
+
+    const colors = [
+        { name: 'Blue', value: '#3b82f6' },
+        { name: 'Green', value: '#22c55e' },
+        { name: 'Purple', value: '#8b5cf6' },
+        { name: 'Red', value: '#ef4444' },
+        { name: 'Yellow', value: '#eab308' },
+    ];
 
     return React.createElement('div', null,
         React.createElement(AppHeader, { title: "Настройки", onBack: () => setScreen({ name: 'home' }) }),
         React.createElement('main', { className: "p-4 space-y-4" },
+             React.createElement(Card, null,
+                React.createElement('h2', { className: "text-lg font-bold mb-2" }, "Внешний вид"),
+                React.createElement('div', {className: "mb-4"},
+                    React.createElement('h3', {className: "text-md font-semibold mb-2"}, "Тема"),
+                    React.createElement('div', {className: "flex gap-2"},
+                       React.createElement(Button, {onClick: () => applyTheme('light'), className: currentTheme !== 'dark' ? '' : 'bg-gray-500 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}, "Светлая"),
+                       React.createElement(Button, {onClick: () => applyTheme('dark'), className: currentTheme === 'dark' ? '' : 'bg-gray-500 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}, "Темная")
+                    )
+                ),
+                 React.createElement('div', null,
+                    React.createElement('h3', {className: "text-md font-semibold mb-2"}, "Акцентный цвет"),
+                    React.createElement('div', {className: "flex gap-2"},
+                        colors.map(color => React.createElement('button', {
+                            key: color.name,
+                            onClick: () => applyThemeColor(color.value),
+                            className: `w-8 h-8 rounded-full border-2 ${currentColor === color.value ? 'border-primary-500 ring-2 ring-primary-500' : 'border-transparent'}`,
+                            style: { backgroundColor: color.value }
+                        }))
+                    )
+                )
+            ),
             React.createElement(Card, null,
                 React.createElement('h2', { className: "text-lg font-bold mb-2" }, "Экспорт данных"),
                 React.createElement('p', { className: "text-gray-600 dark:text-gray-400 mb-4" }, "Сохранить всю базу клиентов и результатов в один JSON-файл."),
