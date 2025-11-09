@@ -19,7 +19,8 @@ window.addEventListener('load', () => {
 
     const downloadAsTxt = (filename, text) => {
         const element = document.createElement("a");
-        const file = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        // Add UTF-8 BOM to solve encoding issues on mobile devices
+        const file = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
         element.href = URL.createObjectURL(file);
         element.download = filename;
         document.body.appendChild(element);
@@ -323,7 +324,7 @@ window.addEventListener('load', () => {
                                 className: "p-3 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600",
                                 onClick: () => setScreen({ name: 'testResult', resultId: tr.id })
                             },
-                                React.createElement('p', { className: "font-semibold" }, TESTS[tr.testKey].name),
+                                React.createElement('p', { className: "font-semibold" }, TESTS[tr.key].name),
                                 React.createElement('p', { className: "text-sm text-gray-500" }, `Дата: ${formatDate(tr.date)}`)
                             )
                         ) : React.createElement('p', null, "Нет пройденных тестов.")
