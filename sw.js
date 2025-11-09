@@ -1,15 +1,13 @@
-const CACHE_NAME = 'psychosuite-v19';
+const CACHE_NAME = 'psychosuite-v20';
 const URLS_TO_CACHE = [
   './',
   './index.html',
   './index.js',
-  './config.js',
   './sw-register.js',
   './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js',
-  'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js',
-  'https://cdn.jsdelivr.net/npm/@google/genai/dist/index.esm.js'
+  'https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js'
 ];
 
 self.addEventListener('install', event => {
