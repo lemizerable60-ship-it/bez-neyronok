@@ -195,13 +195,13 @@ window.addEventListener('load', () => {
     };
 
     const Button = ({ onClick, children, className, type = 'button', disabled }) => {
-        return React.createElement('button', { type, onClick, disabled, className: `bg-primary-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 transition-colors duration-200 ${className || ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}` }, children);
+        return React.createElement('button', { type, onClick, disabled, className: `bg-primary-600 text-white font-semibold px-4 py-3 text-lg rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 transition-colors duration-200 ${className || ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}` }, children);
     };
 
     const AppHeader = ({ title, onBack }) => {
         return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-sm p-4 flex items-center" },
             onBack && React.createElement('button', { onClick: onBack, className: "mr-4 text-gray-600 dark:text-gray-300 hover:text-primary-600" }, React.createElement(ChevronLeftIcon)),
-            React.createElement('h1', { className: "text-xl font-bold text-gray-800 dark:text-gray-200" }, title)
+            React.createElement('h1', { className: "text-2xl font-bold text-gray-800 dark:text-gray-200" }, title)
         );
     };
 
@@ -209,16 +209,16 @@ window.addEventListener('load', () => {
     const HomeScreen = ({ setScreen }) => {
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: "PsychoSuite" }),
-            React.createElement('main', { className: "p-4 grid grid-cols-1 md:grid-cols-2 gap-4" },
+            React.createElement('main', { className: "p-6 grid grid-cols-1 md:grid-cols-2 gap-6" },
                 React.createElement(Card, { className: "cursor-pointer hover:shadow-lg transition-shadow", onClick: () => setScreen({ name: 'clientList' }) },
                     React.createElement(UsersIcon),
-                    React.createElement('h2', { className: "text-lg font-bold mt-2" }, "Клиенты"),
-                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400" }, "Просмотр и управление базой клиентов")
+                    React.createElement('h2', { className: "text-xl font-bold mt-2" }, "Клиенты"),
+                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400 mt-1" }, "Просмотр и управление базой клиентов")
                 ),
                 React.createElement(Card, { className: "cursor-pointer hover:shadow-lg transition-shadow", onClick: () => setScreen({ name: 'settings' }) },
                     React.createElement(SettingsIcon),
-                    React.createElement('h2', { className: "text-lg font-bold mt-2" }, "Настройки"),
-                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400" }, "Импорт и экспорт данных")
+                    React.createElement('h2', { className: "text-xl font-bold mt-2" }, "Настройки"),
+                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400 mt-1" }, "Импорт и экспорт данных")
                 )
             )
         );
@@ -227,21 +227,21 @@ window.addEventListener('load', () => {
     const ClientListScreen = ({ clients, setScreen }) => {
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: "Список клиентов", onBack: () => setScreen({ name: 'home' }) }),
-            React.createElement('main', { className: "p-4" },
-                React.createElement(Button, { onClick: () => setScreen({ name: 'clientForm', clientId: null }), className: "mb-4 flex items-center" },
+            React.createElement('main', { className: "p-6" },
+                React.createElement(Button, { onClick: () => setScreen({ name: 'clientForm', clientId: null }), className: "mb-6 flex items-center" },
                     React.createElement(PlusIcon, { className: "mr-2" }), "Добавить клиента"
                 ),
-                React.createElement('div', { className: "space-y-2" },
+                React.createElement('div', { className: "space-y-4" },
                     clients.length > 0 ? clients.map(client =>
                         React.createElement(Card, {
                             key: client.id,
                             className: "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700",
                             onClick: () => setScreen({ name: 'clientDetail', clientId: client.id })
                         },
-                            React.createElement('h3', { className: "font-bold text-lg" }, client.name),
-                            React.createElement('p', { className: "text-sm text-gray-500" }, `Дата рождения: ${formatDate(client.birthDate)}`)
+                            React.createElement('h3', { className: "font-bold text-xl" }, client.name),
+                            React.createElement('p', { className: "text-md text-gray-500" }, `Дата рождения: ${formatDate(client.birthDate)}`)
                         )
-                    ) : React.createElement('p', null, "Список клиентов пуст.")
+                    ) : React.createElement('p', {className: "text-lg"}, "Список клиентов пуст.")
                 )
             )
         );
@@ -264,20 +264,20 @@ window.addEventListener('load', () => {
 
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: client ? "Редактировать клиента" : "Новый клиент", onBack: () => setScreen({ name: 'clientList' }) }),
-            React.createElement('main', { className: "p-4" },
-                React.createElement('form', { onSubmit: handleSubmit, className: "space-y-4" },
+            React.createElement('main', { className: "p-6" },
+                React.createElement('form', { onSubmit: handleSubmit, className: "space-y-6" },
                     React.createElement('div', null,
-                        React.createElement('label', { htmlFor: 'name', className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "ФИО"),
+                        React.createElement('label', { htmlFor: 'name', className: "block text-lg font-medium text-gray-700 dark:text-gray-300" }, "ФИО"),
                         React.createElement('input', {
                             type: 'text', id: 'name', value: name, onChange: e => setName(e.target.value),
-                            required: true, className: "mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            required: true, className: "mt-1 block w-full px-4 py-3 text-lg bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         })
                     ),
                     React.createElement('div', null,
-                        React.createElement('label', { htmlFor: 'birthDate', className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Дата рождения"),
+                        React.createElement('label', { htmlFor: 'birthDate', className: "block text-lg font-medium text-gray-700 dark:text-gray-300" }, "Дата рождения"),
                         React.createElement('input', {
                             type: 'date', id: 'birthDate', value: birthDate, onChange: e => setBirthDate(e.target.value),
-                            required: true, className: "mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            required: true, className: "mt-1 block w-full px-4 py-3 text-lg bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         })
                     ),
                     React.createElement(Button, { type: 'submit' }, "Сохранить")
@@ -297,15 +297,15 @@ window.addEventListener('load', () => {
 
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: client.name, onBack: () => setScreen({ name: 'clientList' }) }),
-            React.createElement('main', { className: "p-4 space-y-6" },
+            React.createElement('main', { className: "p-6 space-y-6" },
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-2" }, "Информация о клиенте"),
-                    React.createElement('p', null, `Дата рождения: ${formatDate(client.birthDate)}`),
-                    React.createElement(Button, { onClick: () => setScreen({ name: 'clientForm', clientId: client.id }), className: "mt-4 text-sm" }, "Редактировать")
+                    React.createElement('h2', { className: "text-xl font-bold mb-2" }, "Информация о клиенте"),
+                    React.createElement('p', {className: "text-lg"}, `Дата рождения: ${formatDate(client.birthDate)}`),
+                    React.createElement(Button, { onClick: () => setScreen({ name: 'clientForm', clientId: client.id }), className: "mt-4" }, "Редактировать")
                 ),
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-2" }, "Начать новое обследование"),
-                    React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2" },
+                    React.createElement('h2', { className: "text-xl font-bold mb-4" }, "Начать новое обследование"),
+                    React.createElement('div', { className: "grid grid-cols-1 gap-4" },
                         Object.keys(TESTS).map(key =>
                             React.createElement(Button, {
                                 key: key,
@@ -316,34 +316,34 @@ window.addEventListener('load', () => {
                     )
                 ),
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-4" }, "История обследований"),
-                    React.createElement('div', { className: "space-y-2" },
+                    React.createElement('h2', { className: "text-xl font-bold mb-4" }, "История обследований"),
+                    React.createElement('div', { className: "space-y-3" },
                         clientTestResults.length > 0 ? clientTestResults.map(tr =>
                             React.createElement('div', {
                                 key: tr.id,
-                                className: "p-3 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600",
+                                className: "p-4 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600",
                                 onClick: () => setScreen({ name: 'testResult', resultId: tr.id })
                             },
-                                React.createElement('p', { className: "font-semibold" }, TESTS[tr.key].name),
-                                React.createElement('p', { className: "text-sm text-gray-500" }, `Дата: ${formatDate(tr.date)}`)
+                                React.createElement('p', { className: "font-semibold text-lg" }, TESTS[tr.testKey].name),
+                                React.createElement('p', { className: "text-md text-gray-500" }, `Дата: ${formatDate(tr.date)}`)
                             )
-                        ) : React.createElement('p', null, "Нет пройденных тестов.")
+                        ) : React.createElement('p', {className: "text-lg"}, "Нет пройденных тестов.")
                     )
                 ),
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-4" }, "Сводные отчеты"),
+                    React.createElement('h2', { className: "text-xl font-bold mb-4" }, "Сводные отчеты"),
                     React.createElement(Button, { onClick: () => setScreen({ name: 'report', clientId: client.id }), className: "mb-4" }, "Создать новый сводный отчет"),
-                    React.createElement('div', { className: "space-y-2" },
+                    React.createElement('div', { className: "space-y-3" },
                         clientReports.length > 0 ? clientReports.map(report =>
                             React.createElement('div', {
                                 key: report.id,
-                                className: "p-3 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600",
+                                className: "p-4 bg-gray-50 dark:bg-gray-700 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600",
                                 onClick: () => setScreen({ name: 'report', clientId: client.id, reportId: report.id })
                             },
-                                React.createElement('p', { className: "font-semibold" }, `Отчет от ${formatDate(report.date)}`),
-                                React.createElement('p', { className: "text-sm text-gray-500" }, `Тестов в отчете: ${report.testResultIds.length}`)
+                                React.createElement('p', { className: "font-semibold text-lg" }, `Отчет от ${formatDate(report.date)}`),
+                                React.createElement('p', { className: "text-md text-gray-500" }, `Тестов в отчете: ${report.testResultIds.length}`)
                             )
-                        ) : React.createElement('p', null, "Нет сохраненных отчетов.")
+                        ) : React.createElement('p', {className: "text-lg"}, "Нет сохраненных отчетов.")
                     )
                 )
             )
@@ -353,56 +353,63 @@ window.addEventListener('load', () => {
     const TestScreen = ({ setScreen, clientId, testKey, testResults, setTestResults }) => {
         const test = TESTS[testKey];
         const [answers, setAnswers] = useState(Array(test.questions.length).fill(null));
+        const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-        const handleAnswer = (qIndex, pIndex) => {
+        const handleAnswer = (pIndex) => {
             const newAnswers = [...answers];
-            newAnswers[qIndex] = test.questions[qIndex].points[pIndex];
+            newAnswers[currentQuestionIndex] = test.questions[currentQuestionIndex].points[pIndex];
             setAnswers(newAnswers);
+
+            setTimeout(() => {
+                if (currentQuestionIndex < test.questions.length - 1) {
+                    setCurrentQuestionIndex(currentQuestionIndex + 1);
+                } else {
+                    handleSubmit(newAnswers);
+                }
+            }, 300); // Short delay for visual feedback
         };
 
-        const handleSubmit = () => {
-            const scores = test.calculate(answers.map(a => a ?? 0));
+        const handleSubmit = (finalAnswers) => {
+            const scores = test.calculate(finalAnswers.map(a => a ?? 0));
             const interpretation = test.interpret(scores);
             const newResult = {
                 id: Date.now().toString(),
                 clientId,
                 testKey,
                 date: new Date().toISOString(),
-                answers,
+                answers: finalAnswers,
                 scores,
                 interpretation
             };
             setTestResults([...testResults, newResult]);
             setScreen({ name: 'testResult', resultId: newResult.id });
         };
-
-        const isComplete = answers.every(a => a !== null);
+        
+        const currentQuestion = test.questions[currentQuestionIndex];
 
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: test.name, onBack: () => setScreen({ name: 'clientDetail', clientId }) }),
-            React.createElement('main', { className: "p-4" },
-                React.createElement('div', { className: "space-y-6" },
-                    test.questions.map((q, qIndex) =>
-                        React.createElement(Card, { key: qIndex },
-                            React.createElement('p', { className: "font-semibold mb-3" }, `${qIndex + 1}. ${q.text}`),
-                            React.createElement('div', { className: "flex flex-wrap gap-2" },
-                                q.options.map((opt, pIndex) =>
-                                    React.createElement('button', {
-                                        key: pIndex,
-                                        onClick: () => handleAnswer(qIndex, pIndex),
-                                        className: `px-3 py-1.5 text-sm rounded-md border transition-colors ${answers[qIndex] === test.questions[qIndex].points[pIndex] ? 'bg-primary-600 text-white border-primary-600' : 'bg-transparent border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'}`
-                                    }, opt)
-                                )
+            React.createElement('main', { className: "p-6 flex flex-col items-center justify-center h-[calc(100vh-100px)]" },
+                React.createElement('div', { className: "w-full max-w-2xl" },
+                    React.createElement('p', { className: "text-center text-lg text-gray-500 mb-4" }, `Вопрос ${currentQuestionIndex + 1} из ${test.questions.length}`),
+                    React.createElement(Card, null,
+                        React.createElement('p', { className: "font-semibold text-2xl mb-6 text-center" }, currentQuestion.text),
+                        React.createElement('div', { className: "flex flex-col gap-4" },
+                            currentQuestion.options.map((opt, pIndex) =>
+                                React.createElement('button', {
+                                    key: pIndex,
+                                    onClick: () => handleAnswer(pIndex),
+                                    className: `w-full text-left p-4 text-xl rounded-md border-2 transition-colors bg-transparent border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500`
+                                }, opt)
                             )
                         )
-                    ),
-                    React.createElement(Button, { onClick: handleSubmit, disabled: !isComplete }, "Завершить тест и посмотреть результаты")
+                    )
                 )
             )
         );
     };
 
-    const TestResultScreen = ({ setScreen, resultId, clients, testResults, setTestResults }) => {
+    const TestResultScreen = ({ setScreen, resultId, clients, testResults }) => {
         const result = testResults.find(tr => tr.id === resultId);
 
         if (!result) {
@@ -438,29 +445,29 @@ window.addEventListener('load', () => {
 
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: "Результаты теста", onBack: () => setScreen({ name: 'clientDetail', clientId: result.clientId }) }),
-            React.createElement('main', { className: "p-4 space-y-6" },
+            React.createElement('main', { className: "p-6 space-y-6" },
                 React.createElement('div', { className: "flex justify-end" },
                     React.createElement(Button, { onClick: generateTxtReport, className: "flex items-center" }, React.createElement(SaveIcon), "Сохранить протокол (.txt)")
                 ),
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-4" }, "Протокол обследования"),
-                    React.createElement('div', { className: "grid grid-cols-2 gap-4 mb-6" },
-                        React.createElement('div', null, React.createElement('p', { className: "text-sm text-gray-500" }, "Клиент"), React.createElement('p', { className: "font-semibold" }, client?.name)),
-                        React.createElement('div', null, React.createElement('p', { className: "text-sm text-gray-500" }, "Дата рождения"), React.createElement('p', { className: "font-semibold" }, formatDate(client?.birthDate || ''))),
-                        React.createElement('div', null, React.createElement('p', { className: "text-sm text-gray-500" }, "Тест"), React.createElement('p', { className: "font-semibold" }, test.name)),
-                        React.createElement('div', null, React.createElement('p', { className: "text-sm text-gray-500" }, "Дата проведения"), React.createElement('p', { className: "font-semibold" }, formatDate(result.date)))
+                    React.createElement('h2', { className: "text-xl font-bold mb-4" }, "Протокол обследования"),
+                    React.createElement('div', { className: "grid grid-cols-2 gap-4 mb-6 text-lg" },
+                        React.createElement('div', null, React.createElement('p', { className: "text-md text-gray-500" }, "Клиент"), React.createElement('p', { className: "font-semibold" }, client?.name)),
+                        React.createElement('div', null, React.createElement('p', { className: "text-md text-gray-500" }, "Дата рождения"), React.createElement('p', { className: "font-semibold" }, formatDate(client?.birthDate || ''))),
+                        React.createElement('div', null, React.createElement('p', { className: "text-md text-gray-500" }, "Тест"), React.createElement('p', { className: "font-semibold" }, test.name)),
+                        React.createElement('div', null, React.createElement('p', { className: "text-md text-gray-500" }, "Дата проведения"), React.createElement('p', { className: "font-semibold" }, formatDate(result.date)))
                     ),
-                    React.createElement('h3', { className: "text-md font-bold mb-2 border-t pt-4" }, "Итоговые результаты"),
+                    React.createElement('h3', { className: "text-lg font-bold mb-2 border-t pt-4" }, "Итоговые результаты"),
                     React.createElement('div', { className: "flex items-start gap-8" },
                         React.createElement('div', { className: "flex gap-4" },
                             Object.entries(result.scores).map(([key, value]) =>
                                 React.createElement('div', { key: key, className: "text-center" },
-                                    React.createElement('p', { className: "text-3xl font-bold text-primary-600" }, value),
-                                    React.createElement('p', { className: "text-sm text-gray-500" }, key)
+                                    React.createElement('p', { className: "text-4xl font-bold text-primary-600" }, value),
+                                    React.createElement('p', { className: "text-md text-gray-500" }, key)
                                 )
                             )
                         ),
-                        React.createElement('div', null,
+                        React.createElement('div', {className: "text-lg"},
                             React.createElement('h4', { className: "font-semibold mb-1" }, "Стандартная интерпретация:"),
                             React.createElement('ul', { className: "list-disc list-inside space-y-1" },
                                 Object.values(result.interpretation).map((inter, index) => React.createElement('li', { key: index }, inter))
@@ -536,58 +543,58 @@ window.addEventListener('load', () => {
 
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: "Сводный отчет", onBack: () => setScreen({ name: 'clientDetail', clientId }) }),
-            React.createElement('main', { className: "p-4 grid grid-cols-1 lg:grid-cols-3 gap-6" },
-                React.createElement('div', { className: "lg:col-span-1 space-y-4" },
+            React.createElement('main', { className: "p-6 grid grid-cols-1 lg:grid-cols-3 gap-6" },
+                React.createElement('div', { className: "lg:col-span-1 space-y-6" },
                     React.createElement(Card, null,
-                        React.createElement('h3', { className: "font-bold mb-2" }, "1. Выберите тесты"),
+                        React.createElement('h3', { className: "font-bold text-lg mb-2" }, "1. Выберите тесты"),
                         React.createElement('div', { className: "space-y-2 max-h-60 overflow-y-auto" },
                             clientTestResults.map(tr =>
                                 React.createElement('div', {
                                     key: tr.id,
                                     onClick: () => handleTestSelect(tr.id),
-                                    className: `p-2 rounded cursor-pointer border ${selectedTestIds.has(tr.id) ? 'bg-primary-100 dark:bg-primary-900 border-primary-500' : 'bg-gray-50 dark:bg-gray-700'}`
+                                    className: `p-3 rounded cursor-pointer border ${selectedTestIds.has(tr.id) ? 'bg-primary-100 dark:bg-primary-900 border-primary-500' : 'bg-gray-50 dark:bg-gray-700'}`
                                 },
-                                    React.createElement('p', { className: "font-semibold" }, TESTS[tr.testKey].name),
+                                    React.createElement('p', { className: "font-semibold text-md" }, TESTS[tr.testKey].name),
                                     React.createElement('p', { className: "text-sm" }, formatDate(tr.date))
                                 )
                             )
                         )
                     ),
                      React.createElement(Card, null,
-                        React.createElement('h3', { className: "font-bold mb-2" }, "2. Сохраните отчет"),
+                        React.createElement('h3', { className: "font-bold text-lg mb-2" }, "2. Сохраните отчет"),
                         React.createElement(Button, { onClick: saveReport, disabled: selectedTestIds.size === 0 }, "Сохранить выбранные тесты в отчет")
                     ),
                     React.createElement(Card, null,
-                        React.createElement('h3', { className: "font-bold mb-2" }, "Сохраненные сводные отчеты"),
+                        React.createElement('h3', { className: "font-bold text-lg mb-2" }, "Сохраненные сводные отчеты"),
                         React.createElement('div', { className: "space-y-2 max-h-60 overflow-y-auto" },
                             localReports.length > 0 ? localReports.map(report =>
                                 React.createElement('div', {
                                     key: report.id,
                                     onClick: () => loadReport(report),
-                                    className: "p-2 rounded cursor-pointer bg-gray-50 dark:bg-gray-700"
+                                    className: "p-3 rounded cursor-pointer bg-gray-50 dark:bg-gray-700"
                                 },
                                     `Отчет от ${formatDate(report.date)}`
                                 )
-                            ) : React.createElement('p', { className: "text-sm" }, "Нет отчетов.")
+                            ) : React.createElement('p', { className: "text-md" }, "Нет отчетов.")
                         )
                     )
                 ),
-                React.createElement('div', { className: "lg:col-span-2 space-y-4" },
+                React.createElement('div', { className: "lg:col-span-2 space-y-6" },
                     React.createElement('div', { className: "flex justify-end" },
                         React.createElement(Button, { onClick: generateTxtReport, disabled: selectedTestIds.size === 0 }, React.createElement(SaveIcon), "Сохранить отчет (.txt)")
                     ),
                     React.createElement(Card, null,
-                        React.createElement('h3', { className: "font-bold mb-2" }, "Краткая сводка по выбранным тестам"),
-                        selectedResults.length > 0 ? React.createElement('ul', { className: "space-y-2" },
+                        React.createElement('h3', { className: "font-bold text-lg mb-2" }, "Краткая сводка по выбранным тестам"),
+                        selectedResults.length > 0 ? React.createElement('ul', { className: "space-y-4 text-lg" },
                             selectedResults.map(tr =>
                                 React.createElement('li', { key: tr.id },
                                     React.createElement('strong', null, TESTS[tr.testKey].name),
-                                    React.createElement('span', { className: "text-sm text-gray-500" }, ` (${formatDate(tr.date)})`),
-                                    React.createElement('p', { className: "text-sm pl-2" }, `Баллы: ${JSON.stringify(tr.scores)}`),
-                                    React.createElement('p', { className: "text-sm pl-2" }, `Интерпретация: ${Object.values(tr.interpretation).join(' ')}`)
+                                    React.createElement('span', { className: "text-md text-gray-500" }, ` (${formatDate(tr.date)})`),
+                                    React.createElement('p', { className: "text-md pl-2" }, `Баллы: ${JSON.stringify(tr.scores)}`),
+                                    React.createElement('p', { className: "text-md pl-2" }, `Интерпретация: ${Object.values(tr.interpretation).join(' ')}`)
                                 )
                             )
-                        ) : React.createElement('p', null, "Выберите тесты для отображения сводки.")
+                        ) : React.createElement('p', {className: "text-lg"}, "Выберите тесты для отображения сводки.")
                     )
                 )
             )
@@ -668,36 +675,36 @@ window.addEventListener('load', () => {
 
         return React.createElement('div', null,
             React.createElement(AppHeader, { title: "Настройки", onBack: () => setScreen({ name: 'home' }) }),
-            React.createElement('main', { className: "p-4 space-y-4" },
+            React.createElement('main', { className: "p-6 space-y-6" },
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-2" }, "Внешний вид"),
+                    React.createElement('h2', { className: "text-xl font-bold mb-4" }, "Внешний вид"),
                     React.createElement('div', {className: "mb-4"},
-                        React.createElement('h3', {className: "text-md font-semibold mb-2"}, "Тема"),
+                        React.createElement('h3', {className: "text-lg font-semibold mb-2"}, "Тема"),
                         React.createElement('div', {className: "flex gap-2"},
                            React.createElement(Button, {onClick: () => applyTheme('light'), className: currentTheme !== 'dark' ? '' : 'bg-gray-500 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}, "Светлая"),
                            React.createElement(Button, {onClick: () => applyTheme('dark'), className: currentTheme === 'dark' ? '' : 'bg-gray-500 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}, "Темная")
                         )
                     ),
                      React.createElement('div', null,
-                        React.createElement('h3', {className: "text-md font-semibold mb-2"}, "Акцентный цвет"),
+                        React.createElement('h3', {className: "text-lg font-semibold mb-2"}, "Акцентный цвет"),
                         React.createElement('div', {className: "flex gap-2"},
                             colors.map(color => React.createElement('button', {
                                 key: color.name,
                                 onClick: () => applyThemeColor(color.value),
-                                className: `w-8 h-8 rounded-full border-2 ${currentColor === color.value ? 'border-primary-500 ring-2 ring-primary-500' : 'border-transparent'}`,
+                                className: `w-10 h-10 rounded-full border-2 ${currentColor === color.value ? 'border-primary-500 ring-2 ring-primary-500' : 'border-transparent'}`,
                                 style: { backgroundColor: color.value }
                             }))
                         )
                     )
                 ),
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-2" }, "Экспорт данных"),
-                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400 mb-4" }, "Сохранить всю базу клиентов и результатов в один JSON-файл."),
+                    React.createElement('h2', { className: "text-xl font-bold mb-2" }, "Экспорт данных"),
+                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400 mb-4 text-lg" }, "Сохранить всю базу клиентов и результатов в один JSON-файл."),
                     React.createElement(Button, { onClick: handleExport }, "Экспортировать")
                 ),
                 React.createElement(Card, null,
-                    React.createElement('h2', { className: "text-lg font-bold mb-2" }, "Импорт данных"),
-                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400 mb-4" }, "Загрузить данные из ранее экспортированного JSON-файла. Внимание: это перезапишет все текущие данные!"),
+                    React.createElement('h2', { className: "text-xl font-bold mb-2" }, "Импорт данных"),
+                    React.createElement('p', { className: "text-gray-600 dark:text-gray-400 mb-4 text-lg" }, "Загрузить данные из ранее экспортированного JSON-файла. Внимание: это перезапишет все текущие данные!"),
                     React.createElement('input', { type: 'file', accept: '.json', onChange: handleImport, className: "hidden", ref: importRef }),
                     React.createElement(Button, { onClick: () => importRef.current?.click() }, "Импортировать")
                 )
@@ -731,7 +738,7 @@ window.addEventListener('load', () => {
                 case 'test':
                     return React.createElement(TestScreen, { setScreen, clientId: screen.clientId, testKey: screen.testKey, testResults, setTestResults });
                 case 'testResult':
-                    return React.createElement(TestResultScreen, { setScreen, resultId: screen.resultId, clients, testResults, setTestResults });
+                    return React.createElement(TestResultScreen, { setScreen, resultId: screen.resultId, clients, testResults });
                 case 'report':
                     return React.createElement(ReportScreen, { setScreen, clientId: screen.clientId, reportId: screen.reportId, clients, testResults, reports, setReports });
                 case 'settings':
